@@ -7,7 +7,9 @@ const app = express();
 const port = process.env.PORT || 12321;
 
 // 🔒 IPRoyal Proxy Configuration
-const proxyUrl = 'http://1Fo2iPohpw6q4MNv:KWdfxGrz7ZU8aRxw@geo.iproyal.com:12321';
+//const proxyUrl = 'http://1Fo2iPohpw6q4MNv:KWdfxGrz7ZU8aRxw@geo.iproyal.com:12321';
+const proxyUrl = 'http://1Fo2iPohpw6q4MNv:KWdfxGrz7ZU8aRxw_session-asNemxuH_lifetime-30s@geo.iproyal.com:12321';
+
 let requestCount = 0;
 let proxyAgent = new ProxyAgent(proxyUrl);
 
