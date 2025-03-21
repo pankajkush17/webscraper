@@ -1,10 +1,9 @@
 const cheerio = require('cheerio');
-const { SocksProxyAgent } = require('socks-proxy-agent');
 
 const getDataFromUrl = async (url, proxyAgent) => {
     const fetch = (await import('node-fetch')).default;
     try {
-        const response = await fetch(`https://www.gsmarena.com${url}`, { agent: proxyAgent });
+        const response = await fetch(`https://www.gsmarena.com${url}`, { dispatcher: proxyAgent });
         if (!response.ok) {
             throw new Error(`Error fetching data from URL: ${response.statusText}`);
         }
