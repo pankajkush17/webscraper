@@ -1,4 +1,5 @@
 const cheerio = require('cheerio');
+const { SocksProxyAgent } = require('socks-proxy-agent');
 
 const getDataFromUrl = async (url, proxyAgent) => {
     const fetch = (await import('node-fetch')).default;
@@ -15,16 +16,26 @@ const getDataFromUrl = async (url, proxyAgent) => {
 };
 
 const getBrands = async (proxyAgent) => {
-    const html = await getDataFromUrl('/makers.php3', proxyAgent);
-    const $ = cheerio.load(html);
-    const brands = [];
+    const url = 'https://www.gsmarena.com/makers.php3';
+    try {
+        const fetch = (await import('node-fetch')).default;
+        const response = await fetch(url, {
+            agent: proxyAgent,
+        });
+        const data = await response.text();
+        const $ = cheerio.load(data);
+        const brands = [];
 
-    $('.st-text').find('td').each((i, el) => {
-        const brand = $(el).find('a').text();
-        brands.push(brand);
-    });
+        $('.st-text').find('td').each((i, el) => {
+            const brand = $(el).find('a').text();
+            brands.push(brand);
+        });
 
-    return brands;
+        return brands;
+    } catch (error) {
+        console.error('Catalog Fetch Error:', error);
+        throw error;
+    }
 };
 
 const getDevices = ($, elements) => {
@@ -62,35 +73,45 @@ const getBrandDevices = async (brandUrl, proxyAgent) => {
     return json;
 };
 
-const getDevice = async (device, proxyAgent) => {
-    const html = await getDataFromUrl(`/${device}.php`, proxyAgent);
-    const $ = cheerio.load(html);
+const getDevice = async (deviceId, proxyAgent) => {
+    const url = `https://www.gsmarena.com/${deviceId}.php`;
+    try {
+        const fetch = (await import('node-fetch')).default;
+        const response = await fetch(url, {
+            agent: proxyAgent,
+        });
+        const data = await response.text();
+        const $ = cheerio.load(data);
 
-    const displaySize = $('span[data-spec=displaysize-hl]').text();
-    const displayRes = $('div[data-spec=displayres-hl]').text();
-    const cameraPixels = $('.accent-camera').text();
-    const videoPixels = $('div[data-spec=videopixels-hl]').text();
-    const ramSize = $('.accent-expansion').text();
-    const chipset = $('div[data-spec=chipset-hl]').text();
-    const batterySize = $('.accent-battery').text();
-    const batteryType = $('div[data-spec=battype-hl]').text();
-    const internalMemory = $('span[data-spec="storage-hl"]').text();
-    const colors = $('td[data-spec="colors"]').text().trim();
-    const imageUrl = $('div.specs-photo-main img').attr('src');
+        const displaySize = $('span[data-spec=displaysize-hl]').text();
+        const displayRes = $('div[data-spec=displayres-hl]').text();
+        const cameraPixels = $('.accent-camera').text();
+        const videoPixels = $('div[data-spec=videopixels-hl]').text();
+        const ramSize = $('.accent-expansion').text();
+        const chipset = $('div[data-spec=chipset-hl]').text();
+        const batterySize = $('.accent-battery').text();
+        const batteryType = $('div[data-spec=battype-hl]').text();
+        const internalMemory = $('span[data-spec="storage-hl"]').text();
+        const colors = $('td[data-spec="colors"]').text().trim();
+        const imageUrl = $('div.specs-photo-main img').attr('src');
 
-    return {
-        displaySize,
-        displayRes,
-        cameraPixels,
-        videoPixels,
-        ramSize,
-        chipset,
-        batterySize,
-        batteryType,
-        internalMemory,
-        colors,
-        imageUrl,
-    };
+        return {
+            displaySize,
+            displayRes,
+            cameraPixels,
+            videoPixels,
+            ramSize,
+            chipset,
+            batterySize,
+            batteryType,
+            internalMemory,
+            colors,
+            imageUrl,
+        };
+    } catch (error) {
+        console.error('Device Fetch Error:', error);
+        throw error;
+    }
 };
 
 module.exports = {
