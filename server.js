@@ -1,31 +1,17 @@
 const express = require('express');
-const { ProxyAgent } = require('undici');
+const { SocksProxyAgent } = require('socks-proxy-agent');
 const searchService = require('./src/services/search');
 const catalogService = require('./src/services/catalog');
 
 const app = express();
-const port = process.env.PORT || 12321;
+const port = process.env.PORT || 32325;
 
 // 🔒 IPRoyal Proxy Configuration
-//const proxyUrl = 'http://1Fo2iPohpw6q4MNv:KWdfxGrz7ZU8aRxw@geo.iproyal.com:12321';
-const proxyUrl = 'http://1Fo2iPohpw6q4MNv:KWdfxGrz7ZU8aRxw_session-asNemxuH_lifetime-30s@geo.iproyal.com:12321';
-
-let requestCount = 0;
-let proxyAgent = new ProxyAgent(proxyUrl);
-
-// 🔄 Rotate Proxy after 3 requests
-const rotateProxy = () => {
-    requestCount++;
-    if (requestCount > 3) {
-        console.log('Rotating Proxy...');
-        proxyAgent = new ProxyAgent(proxyUrl);
-        requestCount = 0;
-    }
-};
+const proxyUrl = 'socks5://1Fo2iPohpw6q4MNv:KWdfxGrz7ZU8aRxw_session-lfhxd0mi_lifetime-30s@geo.iproyal.com:32325';
+const proxyAgent = new SocksProxyAgent(proxyUrl);
 
 // 🔗 Middleware to attach proxy
 app.use((req, res, next) => {
-    rotateProxy();
     console.log('Incoming Request:', req.method, req.originalUrl);
     console.log('Using Proxy:', proxyUrl);
     req.proxyAgent = proxyAgent;
@@ -38,9 +24,10 @@ app.get('/proxy-test', async (req, res) => {
     try {
         const fetch = (await import('node-fetch')).default;
         const response = await fetch(url, {
-            dispatcher: req.proxyAgent,
+            agent: req.proxyAgent,
         });
         const data = await response.text();
+        console.log('Proxy Test Response:', data.trim());
         res.send({ ip: data.trim() });
     } catch (error) {
         console.error('Proxy Test Failed:', error);
@@ -53,7 +40,7 @@ app.get('/test-gsmarena', async (req, res) => {
     try {
         const fetch = (await import('node-fetch')).default;
         const response = await fetch('https://www.gsmarena.com/', {
-            dispatcher: req.proxyAgent,
+            agent: req.proxyAgent,
         });
 
         const statusCode = response.status;
