@@ -10,6 +10,9 @@ const port = process.env.PORT || 32325;
 const proxyUrl = 'socks5://1Fo2iPohpw6q4MNv:KWdfxGrz7ZU8aRxw_session-lfhxd0mi_lifetime-30s@geo.iproyal.com:32325';
 const proxyAgent = new SocksProxyAgent(proxyUrl);
 
+// Helper function to delay execution
+const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
 // 🔗 Middleware to attach proxy
 app.use((req, res, next) => {
     console.log('Incoming Request:', req.method, req.originalUrl);
@@ -67,6 +70,7 @@ app.get('/search', async (req, res) => {
     }
 
     try {
+        await delay(1000); // Delay to avoid rate limiting
         const devices = await searchService.search(searchTerm, req.proxyAgent);
         res.send(devices);
     } catch (error) {
@@ -78,6 +82,7 @@ app.get('/search', async (req, res) => {
 // 📚 Catalog Route
 app.get('/catalog', async (req, res) => {
     try {
+        await delay(1000); // Delay to avoid rate limiting
         const brands = await catalogService.getBrands(req.proxyAgent);
         res.send(brands);
     } catch (error) {
@@ -94,6 +99,7 @@ app.get('/device', async (req, res) => {
     }
 
     try {
+        await delay(1000); // Delay to avoid rate limiting
         const device = await catalogService.getDevice(deviceId, req.proxyAgent);
         res.send(device);
     } catch (error) {
